@@ -1,6 +1,7 @@
 services:
   - type: web
     name: hasta-randevu-takip
+    runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
