@@ -75,71 +75,74 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-// Database Migration
-using (var scope = app.Services.CreateScope())
+// Database Migration - Uygulama başlamadan önce tabloları oluştur
+try
 {
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    try
+    using (var scope = app.Services.CreateScope())
     {
+        var services = scope.ServiceProvider;
+        var logger = services.GetRequiredService<ILogger<Program>>();
         var context = services.GetRequiredService<ApplicationDbContext>();
-        logger.LogInformation("Veritabanı bağlantısı kontrol ediliyor...");
+        
+        logger.LogInformation("=== VERİTABANI KURULUMU BAŞLIYOR ===");
         
         // Önce bağlantıyı test et
+        logger.LogInformation("Veritabanı bağlantısı test ediliyor...");
         if (!context.Database.CanConnect())
         {
-            logger.LogError("Veritabanına bağlanılamıyor!");
+            logger.LogError("VERİTABANI BAĞLANTISI BAŞARISIZ!");
             throw new Exception("Veritabanı bağlantısı başarısız!");
         }
-        logger.LogInformation("Veritabanı bağlantısı başarılı.");
+        logger.LogInformation("✓ Veritabanı bağlantısı başarılı.");
         
-        // Production'da EnsureCreated kullan (migration yerine)
+        // Tabloları oluştur
+        logger.LogInformation("Tablolar oluşturuluyor...");
         var created = context.Database.EnsureCreated();
         if (created)
         {
-            logger.LogInformation("Veritabanı ve tablolar oluşturuldu.");
+            logger.LogInformation("✓ Veritabanı ve tablolar oluşturuldu.");
         }
         else
         {
-            logger.LogInformation("Veritabanı zaten mevcut.");
+            logger.LogInformation("ℹ Veritabanı zaten mevcut.");
         }
         
         // Tabloların varlığını doğrula
+        logger.LogInformation("Tabloların varlığı kontrol ediliyor...");
         try
         {
             var doktorCount = context.Doktorlar.Count();
-            logger.LogInformation("Tablolar mevcut. Doktor sayısı: {0}", doktorCount);
+            logger.LogInformation("✓ Tablolar mevcut. Doktor sayısı: {0}", doktorCount);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Tablolar bulunamadı! Hata: {Message}", ex.Message);
-            logger.LogInformation("Tabloları yeniden oluşturmayı deniyorum...");
-            // Tablolar yoksa tekrar oluşturmayı dene
-            try
+            logger.LogError("✗ Tablolar bulunamadı! Hata: {Message}", ex.Message);
+            logger.LogInformation("Tabloları silip yeniden oluşturuyorum...");
+            
+            // Tabloları sil ve yeniden oluştur
+            context.Database.EnsureDeleted();
+            var recreated = context.Database.EnsureCreated();
+            if (recreated)
             {
-                context.Database.EnsureDeleted();
-                var recreated = context.Database.EnsureCreated();
-                if (recreated)
-                {
-                    logger.LogInformation("Tablolar başarıyla yeniden oluşturuldu.");
-                }
-                else
-                {
-                    logger.LogWarning("Tablolar yeniden oluşturulamadı (EnsureCreated false döndü).");
-                }
+                logger.LogInformation("✓ Tablolar başarıyla yeniden oluşturuldu.");
             }
-            catch (Exception ex2)
+            else
             {
-                logger.LogError(ex2, "Tablolar yeniden oluşturulamadı: {Message}", ex2.Message);
+                logger.LogError("✗ Tablolar yeniden oluşturulamadı!");
+                throw new Exception("Tablolar oluşturulamadı!");
             }
         }
+        
+        logger.LogInformation("=== VERİTABANI KURULUMU TAMAMLANDI ===");
     }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu: {Message}", ex.Message);
-        logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
-        // Production'da hata olsa bile uygulama çalışmaya devam etsin (logları kontrol edebilmek için)
-    }
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "✗✗✗ VERİTABANI KURULUMU BAŞARISIZ! ✗✗✗");
+    logger.LogError("Hata: {Message}", ex.Message);
+    logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
+    // Uygulama başlamaya devam etsin (logları görebilmek için)
 }
 
 // Configure the HTTP request pipeline.
