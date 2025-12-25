@@ -79,7 +79,19 @@ namespace HastaRandevuTakip.Controllers
                     else
                     {
                         // Yeni hasta oluştur
-                        hasta.CreatedDate = DateTime.Now;
+                        hasta.CreatedDate = DateTime.UtcNow;
+                        // DogumTarihi'ni UTC'ye çevir (eğer varsa)
+                        if (hasta.DogumTarihi.HasValue)
+                        {
+                            if (hasta.DogumTarihi.Value.Kind == DateTimeKind.Unspecified)
+                            {
+                                hasta.DogumTarihi = DateTime.SpecifyKind(hasta.DogumTarihi.Value, DateTimeKind.Utc);
+                            }
+                            else if (hasta.DogumTarihi.Value.Kind == DateTimeKind.Local)
+                            {
+                                hasta.DogumTarihi = hasta.DogumTarihi.Value.ToUniversalTime();
+                            }
+                        }
                         _context.Hastalar.Add(hasta);
                         await _context.SaveChangesAsync();
                         randevu.HastaId = hasta.Id;
@@ -94,7 +106,17 @@ namespace HastaRandevuTakip.Controllers
                     }
 
                     randevu.Durum = RandevuDurumu.Bekliyor;
-                    randevu.CreatedDate = DateTime.Now;
+                    randevu.CreatedDate = DateTime.UtcNow;
+                    
+                    // RandevuTarihi'ni UTC'ye çevir (eğer Unspecified ise)
+                    if (randevu.RandevuTarihi.Kind == DateTimeKind.Unspecified)
+                    {
+                        randevu.RandevuTarihi = DateTime.SpecifyKind(randevu.RandevuTarihi, DateTimeKind.Utc);
+                    }
+                    else if (randevu.RandevuTarihi.Kind == DateTimeKind.Local)
+                    {
+                        randevu.RandevuTarihi = randevu.RandevuTarihi.ToUniversalTime();
+                    }
 
                     _context.Randevular.Add(randevu);
                     await _context.SaveChangesAsync();
@@ -104,8 +126,13 @@ namespace HastaRandevuTakip.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Randevu oluşturulurken hata oluştu");
-                    ModelState.AddModelError("", "Randevu oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
+                    _logger.LogError(ex, "Randevu oluşturulurken hata oluştu: {Message}", ex.Message);
+                    _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
+                    if (ex.InnerException != null)
+                    {
+                        _logger.LogError("Inner exception: {InnerException}", ex.InnerException.Message);
+                    }
+                    ModelState.AddModelError("", $"Randevu oluşturulurken bir hata oluştu: {ex.Message}. Lütfen tekrar deneyin.");
                 }
             }
 

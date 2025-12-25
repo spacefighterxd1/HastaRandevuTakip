@@ -44,7 +44,7 @@ namespace HastaRandevuTakip.Models
         public RandevuDurumu Durum { get; set; } = RandevuDurumu.Bekliyor;
 
         [Display(Name = "Oluşturulma Tarihi")]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
         [ForeignKey("HastaId")]

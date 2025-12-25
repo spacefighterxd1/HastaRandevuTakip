@@ -98,7 +98,19 @@ namespace HastaRandevuTakip.Controllers
                     return View(hasta);
                 }
 
-                hasta.CreatedDate = DateTime.Now;
+                hasta.CreatedDate = DateTime.UtcNow;
+                // DogumTarihi'ni UTC'ye çevir (eğer varsa)
+                if (hasta.DogumTarihi.HasValue)
+                {
+                    if (hasta.DogumTarihi.Value.Kind == DateTimeKind.Unspecified)
+                    {
+                        hasta.DogumTarihi = DateTime.SpecifyKind(hasta.DogumTarihi.Value, DateTimeKind.Utc);
+                    }
+                    else if (hasta.DogumTarihi.Value.Kind == DateTimeKind.Local)
+                    {
+                        hasta.DogumTarihi = hasta.DogumTarihi.Value.ToUniversalTime();
+                    }
+                }
                 _context.Add(hasta);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Hasta başarıyla eklendi.";
@@ -144,6 +156,25 @@ namespace HastaRandevuTakip.Controllers
                         return View(hasta);
                     }
 
+                    // DogumTarihi'ni UTC'ye çevir (eğer varsa)
+                    if (hasta.DogumTarihi.HasValue)
+                    {
+                        if (hasta.DogumTarihi.Value.Kind == DateTimeKind.Unspecified)
+                        {
+                            hasta.DogumTarihi = DateTime.SpecifyKind(hasta.DogumTarihi.Value, DateTimeKind.Utc);
+                        }
+                        else if (hasta.DogumTarihi.Value.Kind == DateTimeKind.Local)
+                        {
+                            hasta.DogumTarihi = hasta.DogumTarihi.Value.ToUniversalTime();
+                        }
+                    }
+                    // CreatedDate UTC olmalı
+                    if (hasta.CreatedDate.Kind != DateTimeKind.Utc)
+                    {
+                        hasta.CreatedDate = hasta.CreatedDate.Kind == DateTimeKind.Local 
+                            ? hasta.CreatedDate.ToUniversalTime() 
+                            : DateTime.SpecifyKind(hasta.CreatedDate, DateTimeKind.Utc);
+                    }
                     _context.Update(hasta);
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Hasta bilgileri başarıyla güncellendi.";

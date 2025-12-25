@@ -43,7 +43,7 @@ namespace HastaRandevuTakip.Models
         public string? Adres { get; set; }
 
         [Display(Name = "Oluşturulma Tarihi")]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         // Navigation Property
         public virtual ICollection<Randevu>? Randevular { get; set; }

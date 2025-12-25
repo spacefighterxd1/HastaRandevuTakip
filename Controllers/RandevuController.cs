@@ -107,7 +107,16 @@ namespace HastaRandevuTakip.Controllers
         {
             if (ModelState.IsValid)
             {
-                randevu.CreatedDate = DateTime.Now;
+                randevu.CreatedDate = DateTime.UtcNow;
+                // RandevuTarihi'ni UTC'ye çevir
+                if (randevu.RandevuTarihi.Kind == DateTimeKind.Unspecified)
+                {
+                    randevu.RandevuTarihi = DateTime.SpecifyKind(randevu.RandevuTarihi, DateTimeKind.Utc);
+                }
+                else if (randevu.RandevuTarihi.Kind == DateTimeKind.Local)
+                {
+                    randevu.RandevuTarihi = randevu.RandevuTarihi.ToUniversalTime();
+                }
                 _context.Add(randevu);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Randevu başarıyla oluşturuldu.";
@@ -154,6 +163,22 @@ namespace HastaRandevuTakip.Controllers
             {
                 try
                 {
+                    // RandevuTarihi'ni UTC'ye çevir
+                    if (randevu.RandevuTarihi.Kind == DateTimeKind.Unspecified)
+                    {
+                        randevu.RandevuTarihi = DateTime.SpecifyKind(randevu.RandevuTarihi, DateTimeKind.Utc);
+                    }
+                    else if (randevu.RandevuTarihi.Kind == DateTimeKind.Local)
+                    {
+                        randevu.RandevuTarihi = randevu.RandevuTarihi.ToUniversalTime();
+                    }
+                    // CreatedDate UTC olmalı
+                    if (randevu.CreatedDate.Kind != DateTimeKind.Utc)
+                    {
+                        randevu.CreatedDate = randevu.CreatedDate.Kind == DateTimeKind.Local 
+                            ? randevu.CreatedDate.ToUniversalTime() 
+                            : DateTime.SpecifyKind(randevu.CreatedDate, DateTimeKind.Utc);
+                    }
                     _context.Update(randevu);
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Randevu başarıyla güncellendi.";
