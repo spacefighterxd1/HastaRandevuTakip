@@ -78,95 +78,94 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-// Database Migration - Uygulama başlamadan önce tabloları oluştur
-// Bu kod MUTLAKA çalışmalı, bu yüzden her adımı loglayalım ve tabloları zorla oluşturalım
-try
+// Database Setup - Standard ASP.NET Core + PostgreSQL + EF Core approach
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
+    try
     {
-        var services = scope.ServiceProvider;
-        var logger = services.GetRequiredService<ILogger<Program>>();
         var context = services.GetRequiredService<ApplicationDbContext>();
         
         logger.LogInformation("=== VERİTABANI KURULUMU BAŞLIYOR ===");
         
-        // Önce bağlantıyı test et
+        // Test connection
         logger.LogInformation("Veritabanı bağlantısı test ediliyor...");
-        if (!context.Database.CanConnect())
+        if (context.Database.CanConnect())
         {
-            logger.LogError("VERİTABANI BAĞLANTISI BAŞARISIZ!");
-            throw new Exception("Veritabanı bağlantısı başarısız!");
-        }
-        logger.LogInformation("✓ Veritabanı bağlantısı başarılı.");
-        
-        // Tabloların varlığını kontrol et
-        logger.LogInformation("Tabloların varlığı kontrol ediliyor...");
-        bool tablolarVar = false;
-        try
-        {
-            var doktorCount = context.Doktorlar.Count();
-            logger.LogInformation("✓ Tablolar mevcut. Doktor sayısı: {0}", doktorCount);
-            tablolarVar = true;
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning("Tablolar bulunamadı: {Message}", ex.Message);
-            tablolarVar = false;
-        }
-        
-        // Tablolar yoksa oluştur
-        if (!tablolarVar)
-        {
-            logger.LogInformation("Tablolar oluşturuluyor...");
+            logger.LogInformation("✓ Veritabanı bağlantısı başarılı.");
+            
+            // Check if tables exist by trying to query
+            bool tablesExist = false;
             try
             {
-                // Önce mevcut tabloları sil (varsa)
-                context.Database.EnsureDeleted();
-                logger.LogInformation("Eski tablolar silindi (varsa).");
+                _ = context.Doktorlar.Count();
+                tablesExist = true;
+                logger.LogInformation("✓ Tablolar mevcut.");
             }
-            catch (Exception ex)
+            catch
             {
-                logger.LogWarning("Eski tablolar silinirken hata (normal olabilir): {Message}", ex.Message);
+                tablesExist = false;
+                logger.LogInformation("Tablolar bulunamadı, oluşturulacak...");
             }
             
-            // Tabloları oluştur
-            var created = context.Database.EnsureCreated();
-            if (created)
+            // Create tables if they don't exist
+            if (!tablesExist)
             {
-                logger.LogInformation("✓ Veritabanı ve tablolar oluşturuldu.");
-            }
-            else
-            {
-                logger.LogWarning("EnsureCreated() false döndü, tablolar zaten mevcut olabilir.");
+                logger.LogInformation("Tablolar oluşturuluyor...");
+                var created = context.Database.EnsureCreated();
+                if (created)
+                {
+                    logger.LogInformation("✓ Tablolar başarıyla oluşturuldu.");
+                }
+                else
+                {
+                    logger.LogWarning("EnsureCreated() false döndü.");
+                }
+                
+                // Verify tables were created
+                try
+                {
+                    var count = context.Doktorlar.Count();
+                    logger.LogInformation("✓ Tablolar doğrulandı. Doktor sayısı: {0}", count);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError("✗ Tablolar oluşturulamadı! Hata: {Message}", ex.Message);
+                    // Try one more time with EnsureDeleted + EnsureCreated
+                    try
+                    {
+                        logger.LogInformation("Tabloları silip yeniden oluşturmayı deniyorum...");
+                        context.Database.EnsureDeleted();
+                        context.Database.EnsureCreated();
+                        var verifyCount = context.Doktorlar.Count();
+                        logger.LogInformation("✓ Tablolar başarıyla yeniden oluşturuldu. Doktor sayısı: {0}", verifyCount);
+                    }
+                    catch (Exception ex2)
+                    {
+                        logger.LogError("✗ Tablolar yeniden oluşturulamadı! Hata: {Message}", ex2.Message);
+                    }
+                }
             }
             
-            // Tekrar kontrol et
-            try
-            {
-                var doktorCount = context.Doktorlar.Count();
-                logger.LogInformation("✓ Tablolar başarıyla oluşturuldu. Doktor sayısı: {0}", doktorCount);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("✗ Tablolar hala oluşturulamadı! Hata: {Message}", ex.Message);
-                throw new Exception($"Tablolar oluşturulamadı: {ex.Message}");
-            }
+            logger.LogInformation("=== VERİTABANI KURULUMU TAMAMLANDI ===");
         }
-        
-        logger.LogInformation("=== VERİTABANI KURULUMU TAMAMLANDI ===");
+        else
+        {
+            logger.LogError("✗ Veritabanı bağlantısı başarısız!");
+        }
     }
-}
-catch (Exception ex)
-{
-    try
+    catch (Exception ex)
     {
-        var logger = app.Services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "✗✗✗ VERİTABANI KURULUMU BAŞARISIZ! ✗✗✗");
         logger.LogError("Hata: {Message}", ex.Message);
         logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
-        logger.LogError("Inner exception: {InnerException}", ex.InnerException?.Message);
+        if (ex.InnerException != null)
+        {
+            logger.LogError("Inner exception: {InnerException}", ex.InnerException.Message);
+        }
     }
-    catch { }
 }
 
 // Configure the HTTP request pipeline.
