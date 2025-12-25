@@ -36,7 +36,7 @@ namespace HastaRandevuTakip.Models
                 .HasForeignKey(r => r.DoktorId)
                 .OnDelete(DeleteBehavior.Restrict); // Doktor silinirse randevular silinmesin
 
-            // Seed Data - Doktorlar
+            // Seed Data - Doktorlar (PostgreSQL için DateTime UTC olmalı)
             modelBuilder.Entity<Doktor>().HasData(
                 new Doktor
                 {
@@ -47,7 +47,7 @@ namespace HastaRandevuTakip.Models
                     Aciklama = "Kalp ve damar hastalıkları uzmanı. 15 yıllık deneyim.",
                     FotoUrl = "https://via.placeholder.com/150",
                     Aktif = true,
-                    CreatedDate = new DateTime(2024, 1, 1)
+                    CreatedDate = DateTime.SpecifyKind(new DateTime(2024, 1, 1), DateTimeKind.Utc)
                 },
                 new Doktor
                 {
@@ -58,7 +58,7 @@ namespace HastaRandevuTakip.Models
                     Aciklama = "Beyin ve sinir sistemi hastalıkları uzmanı. 12 yıllık deneyim.",
                     FotoUrl = "https://via.placeholder.com/150",
                     Aktif = true,
-                    CreatedDate = new DateTime(2024, 1, 1)
+                    CreatedDate = DateTime.SpecifyKind(new DateTime(2024, 1, 1), DateTimeKind.Utc)
                 },
                 new Doktor
                 {
@@ -69,7 +69,7 @@ namespace HastaRandevuTakip.Models
                     Aciklama = "Kemik, eklem ve kas hastalıkları uzmanı. 10 yıllık deneyim.",
                     FotoUrl = "https://via.placeholder.com/150",
                     Aktif = true,
-                    CreatedDate = new DateTime(2024, 1, 1)
+                    CreatedDate = DateTime.SpecifyKind(new DateTime(2024, 1, 1), DateTimeKind.Utc)
                 }
             );
         }
