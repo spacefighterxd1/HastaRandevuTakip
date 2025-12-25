@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using HastaRandevuTakip.Models;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,48 @@ builder.Services.AddControllersWithViews();
 // Database Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+// PostgreSQL URI formatını standard connection string formatına çevir
+if (connectionString.StartsWith("postgresql://") || connectionString.StartsWith("postgres://"))
+{
+    try
+    {
+        // Npgsql'in kendi connection string builder'ını kullan
+        var npgsqlBuilder = new NpgsqlConnectionStringBuilder(connectionString);
+        connectionString = npgsqlBuilder.ConnectionString;
+    }
+    catch
+    {
+        // Npgsql parse edemezse manuel parse dene
+        try
+        {
+            var uri = new Uri(connectionString);
+            var host = uri.Host;
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var database = uri.AbsolutePath.TrimStart('/').Split('?')[0];
+            var userInfo = uri.UserInfo;
+            
+            string user = "";
+            string password = "";
+            
+            if (!string.IsNullOrEmpty(userInfo))
+            {
+                var userInfoParts = userInfo.Split(':');
+                user = Uri.UnescapeDataString(userInfoParts[0]);
+                if (userInfoParts.Length > 1)
+                {
+                    password = Uri.UnescapeDataString(string.Join(":", userInfoParts.Skip(1)));
+                }
+            }
+            
+            connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password};SSL Mode=Require;";
+        }
+        catch
+        {
+            // Parse edilemezse olduğu gibi kullan
+        }
+    }
+}
 
 // PostgreSQL veya SQL Server desteği (connection string'e göre otomatik algılar)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

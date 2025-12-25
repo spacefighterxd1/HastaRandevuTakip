@@ -19,12 +19,21 @@ namespace HastaRandevuTakip.Controllers
         // GET: RandevuAlma - Ana randevu alma sayfası
         public IActionResult Index()
         {
-            var doktorlar = _context.Doktorlar
-                .Where(d => d.Aktif == true)
-                .OrderBy(d => d.UzmanlikAlani)
-                .ToList();
+            try
+            {
+                var doktorlar = _context.Doktorlar
+                    .Where(d => d.Aktif == true)
+                    .OrderBy(d => d.UzmanlikAlani)
+                    .ToList();
 
-            return View(doktorlar);
+                return View(doktorlar);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Doktorlar listelenirken hata oluştu: {Message}", ex.Message);
+                // Hata durumunda boş liste döndür
+                return View(new List<Doktor>());
+            }
         }
 
         // GET: RandevuAlma/RandevuFormu
