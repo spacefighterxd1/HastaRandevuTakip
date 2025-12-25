@@ -13,7 +13,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // PostgreSQL veya SQL Server desteği (connection string'e göre otomatik algılar)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    if (connectionString.Contains("Host=") || connectionString.Contains("Server=") && connectionString.Contains("Port="))
+    // PostgreSQL connection string kontrolü
+    if (connectionString.Contains("Host=") || 
+        connectionString.Contains("postgresql://") || 
+        connectionString.Contains("postgres://") ||
+        connectionString.Contains("User Id=") ||
+        connectionString.Contains("Username="))
     {
         // PostgreSQL connection string
         options.UseNpgsql(connectionString);
@@ -31,25 +36,20 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        if (app.Environment.IsDevelopment())
-        {
-            // Development: Veritabanını sil ve yeniden oluştur
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-        }
-        else
-        {
-            // Production: Migration kullan
-            context.Database.EnsureCreated();
-        }
+        logger.LogInformation("Veritabanı bağlantısı kontrol ediliyor...");
+        
+        // Production'da EnsureCreated kullan (migration yerine)
+        context.Database.EnsureCreated();
+        logger.LogInformation("Veritabanı hazır.");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu.");
+        logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu: {Message}", ex.Message);
+        // Production'da hata olsa bile uygulama çalışmaya devam etsin
     }
 }
 
