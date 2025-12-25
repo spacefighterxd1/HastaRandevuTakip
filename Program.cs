@@ -85,6 +85,14 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         logger.LogInformation("Veritabanı bağlantısı kontrol ediliyor...");
         
+        // Önce bağlantıyı test et
+        if (!context.Database.CanConnect())
+        {
+            logger.LogError("Veritabanına bağlanılamıyor!");
+            throw new Exception("Veritabanı bağlantısı başarısız!");
+        }
+        logger.LogInformation("Veritabanı bağlantısı başarılı.");
+        
         // Production'da EnsureCreated kullan (migration yerine)
         var created = context.Database.EnsureCreated();
         if (created)
@@ -96,15 +104,34 @@ using (var scope = app.Services.CreateScope())
             logger.LogInformation("Veritabanı zaten mevcut.");
         }
         
-        // Tabloların oluşturulduğunu doğrula
-        var canConnect = context.Database.CanConnect();
-        if (canConnect)
+        // Tabloların varlığını doğrula
+        try
         {
-            logger.LogInformation("Veritabanı bağlantısı başarılı.");
+            var doktorCount = context.Doktorlar.Count();
+            logger.LogInformation("Tablolar mevcut. Doktor sayısı: {0}", doktorCount);
         }
-        else
+        catch (Exception ex)
         {
-            logger.LogError("Veritabanı bağlantısı başarısız!");
+            logger.LogError(ex, "Tablolar bulunamadı! Hata: {Message}", ex.Message);
+            logger.LogInformation("Tabloları yeniden oluşturmayı deniyorum...");
+            // Tablolar yoksa tekrar oluşturmayı dene
+            try
+            {
+                context.Database.EnsureDeleted();
+                var recreated = context.Database.EnsureCreated();
+                if (recreated)
+                {
+                    logger.LogInformation("Tablolar başarıyla yeniden oluşturuldu.");
+                }
+                else
+                {
+                    logger.LogWarning("Tablolar yeniden oluşturulamadı (EnsureCreated false döndü).");
+                }
+            }
+            catch (Exception ex2)
+            {
+                logger.LogError(ex2, "Tablolar yeniden oluşturulamadı: {Message}", ex2.Message);
+            }
         }
     }
     catch (Exception ex)
