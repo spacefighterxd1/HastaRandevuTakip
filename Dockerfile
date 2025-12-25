@@ -1,28 +1,23 @@
-# .NET 8.0 SDK image for building
+# Use .NET 8.0 SDK for building
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /app
 
-# Copy project file and restore dependencies
-COPY HastaRandevuTakip.csproj ./
+# Copy csproj and restore dependencies
+COPY *.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
 COPY . ./
-RUN dotnet publish HastaRandevuTakip.csproj -c Release -o /app/publish
+RUN dotnet publish -c Release -o out
 
-# .NET 8.0 Runtime image for running
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Use .NET 8.0 Runtime for running
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+COPY --from=build /app/out .
 
-# Copy published app from build stage
-COPY --from=build /app/publish .
-
-# Expose port
+# Expose port (Render.com uses PORT environment variable)
 EXPOSE 8080
-
-# Set environment variable
 ENV ASPNETCORE_URLS=http://+:8080
 
-# Run the app
 ENTRYPOINT ["dotnet", "HastaRandevuTakip.dll"]
 

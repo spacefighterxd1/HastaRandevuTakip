@@ -3,7 +3,6 @@ services:
     name: hasta-randevu-takip
     runtime: docker
     dockerfilePath: ./Dockerfile
-    dockerContext: .
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
