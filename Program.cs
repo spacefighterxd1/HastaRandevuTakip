@@ -12,21 +12,23 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // PostgreSQL URI formatını standard connection string formatına çevir
+// Npgsql URI formatını direkt kabul eder, ama güvenlik için standard formata çevirelim
 if (connectionString.StartsWith("postgresql://") || connectionString.StartsWith("postgres://"))
 {
     try
     {
-        // Npgsql'in kendi connection string builder'ını kullan
+        // Önce Npgsql'in kendi connection string builder'ını dene
         var npgsqlBuilder = new NpgsqlConnectionStringBuilder(connectionString);
         connectionString = npgsqlBuilder.ConnectionString;
     }
-    catch
+    catch (Exception ex)
     {
         // Npgsql parse edemezse manuel parse dene
         try
         {
             var uri = new Uri(connectionString);
             var host = uri.Host;
+            // Port yoksa varsayılan 5432 kullan
             var port = uri.Port > 0 ? uri.Port : 5432;
             var database = uri.AbsolutePath.TrimStart('/').Split('?')[0];
             var userInfo = uri.UserInfo;
@@ -44,11 +46,12 @@ if (connectionString.StartsWith("postgresql://") || connectionString.StartsWith(
                 }
             }
             
+            // Standard PostgreSQL connection string formatı
             connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password};SSL Mode=Require;";
         }
         catch
         {
-            // Parse edilemezse olduğu gibi kullan
+            // Parse edilemezse URI formatını olduğu gibi kullan (Npgsql kabul edebilir)
         }
     }
 }
