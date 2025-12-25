@@ -86,13 +86,32 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("Veritabanı bağlantısı kontrol ediliyor...");
         
         // Production'da EnsureCreated kullan (migration yerine)
-        context.Database.EnsureCreated();
-        logger.LogInformation("Veritabanı hazır.");
+        var created = context.Database.EnsureCreated();
+        if (created)
+        {
+            logger.LogInformation("Veritabanı ve tablolar oluşturuldu.");
+        }
+        else
+        {
+            logger.LogInformation("Veritabanı zaten mevcut.");
+        }
+        
+        // Tabloların oluşturulduğunu doğrula
+        var canConnect = context.Database.CanConnect();
+        if (canConnect)
+        {
+            logger.LogInformation("Veritabanı bağlantısı başarılı.");
+        }
+        else
+        {
+            logger.LogError("Veritabanı bağlantısı başarısız!");
+        }
     }
     catch (Exception ex)
     {
         logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu: {Message}", ex.Message);
-        // Production'da hata olsa bile uygulama çalışmaya devam etsin
+        logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
+        // Production'da hata olsa bile uygulama çalışmaya devam etsin (logları kontrol edebilmek için)
     }
 }
 

@@ -17,6 +17,11 @@ namespace HastaRandevuTakip.Models
         {
             base.OnModelCreating(modelBuilder);
 
+            // PostgreSQL için tablo isimlerini küçük harfle belirt
+            modelBuilder.Entity<Hasta>().ToTable("hastalar");
+            modelBuilder.Entity<Doktor>().ToTable("doktorlar");
+            modelBuilder.Entity<Randevu>().ToTable("randevular");
+
             // Hasta - Randevu ilişkisi
             modelBuilder.Entity<Randevu>()
                 .HasOne(r => r.Hasta)
