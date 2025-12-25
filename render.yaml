@@ -1,7 +1,6 @@
 services:
   - type: web
     name: hasta-randevu-takip
-    env: dotnet
     buildCommand: dotnet publish -c Release -o ./publish
     startCommand: dotnet ./publish/HastaRandevuTakip.dll
     envVars:
@@ -15,6 +14,5 @@ services:
 databases:
   - name: hasta-randevu-db
     plan: free
-    databaseName: HastaRandevuTakipDB
-    user: hasta_user
+    databaseName: hastarandevutakipdb
 

@@ -10,30 +10,46 @@ builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+// PostgreSQL veya SQL Server desteği (connection string'e göre otomatik algılar)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    if (connectionString.Contains("Host=") || connectionString.Contains("Server=") && connectionString.Contains("Port="))
+    {
+        // PostgreSQL connection string
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        // SQL Server connection string
+        options.UseSqlServer(connectionString);
+    }
+});
 
 var app = builder.Build();
 
-// Database Migration (Development)
-if (app.Environment.IsDevelopment())
+// Database Migration
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    var services = scope.ServiceProvider;
+    try
     {
-        var services = scope.ServiceProvider;
-        try
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        if (app.Environment.IsDevelopment())
         {
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            // Veritabanını sil ve yeniden oluştur (Development için)
+            // Development: Veritabanını sil ve yeniden oluştur
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
-            // Production'da: context.Database.Migrate();
         }
-        catch (Exception ex)
+        else
         {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu.");
+            // Production: Migration kullan
+            context.Database.EnsureCreated();
         }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Veritabanı oluşturulurken bir hata oluştu.");
     }
 }
 
