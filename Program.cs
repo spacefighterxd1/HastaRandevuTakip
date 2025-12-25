@@ -79,6 +79,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 var app = builder.Build();
 
 // Database Migration - Uygulama başlamadan önce tabloları oluştur
+// Bu kod MUTLAKA çalışmalı, bu yüzden her adımı loglayalım ve tabloları zorla oluşturalım
 try
 {
     using (var scope = app.Services.CreateScope())
@@ -94,13 +95,41 @@ try
         if (!context.Database.CanConnect())
         {
             logger.LogError("VERİTABANI BAĞLANTISI BAŞARISIZ!");
+            throw new Exception("Veritabanı bağlantısı başarısız!");
         }
-        else
+        logger.LogInformation("✓ Veritabanı bağlantısı başarılı.");
+        
+        // Tabloların varlığını kontrol et
+        logger.LogInformation("Tabloların varlığı kontrol ediliyor...");
+        bool tablolarVar = false;
+        try
         {
-            logger.LogInformation("✓ Veritabanı bağlantısı başarılı.");
+            var doktorCount = context.Doktorlar.Count();
+            logger.LogInformation("✓ Tablolar mevcut. Doktor sayısı: {0}", doktorCount);
+            tablolarVar = true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("Tablolar bulunamadı: {Message}", ex.Message);
+            tablolarVar = false;
+        }
+        
+        // Tablolar yoksa oluştur
+        if (!tablolarVar)
+        {
+            logger.LogInformation("Tablolar oluşturuluyor...");
+            try
+            {
+                // Önce mevcut tabloları sil (varsa)
+                context.Database.EnsureDeleted();
+                logger.LogInformation("Eski tablolar silindi (varsa).");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning("Eski tablolar silinirken hata (normal olabilir): {Message}", ex.Message);
+            }
             
             // Tabloları oluştur
-            logger.LogInformation("Tablolar oluşturuluyor...");
             var created = context.Database.EnsureCreated();
             if (created)
             {
@@ -108,43 +137,23 @@ try
             }
             else
             {
-                logger.LogInformation("ℹ Veritabanı zaten mevcut.");
+                logger.LogWarning("EnsureCreated() false döndü, tablolar zaten mevcut olabilir.");
             }
             
-            // Tabloların varlığını doğrula
-            logger.LogInformation("Tabloların varlığı kontrol ediliyor...");
+            // Tekrar kontrol et
             try
             {
                 var doktorCount = context.Doktorlar.Count();
-                logger.LogInformation("✓ Tablolar mevcut. Doktor sayısı: {0}", doktorCount);
+                logger.LogInformation("✓ Tablolar başarıyla oluşturuldu. Doktor sayısı: {0}", doktorCount);
             }
             catch (Exception ex)
             {
-                logger.LogError("✗ Tablolar bulunamadı! Hata: {Message}", ex.Message);
-                logger.LogInformation("Tabloları silip yeniden oluşturuyorum...");
-                
-                // Tabloları sil ve yeniden oluştur
-                try
-                {
-                    context.Database.EnsureDeleted();
-                    var recreated = context.Database.EnsureCreated();
-                    if (recreated)
-                    {
-                        logger.LogInformation("✓ Tablolar başarıyla yeniden oluşturuldu.");
-                    }
-                    else
-                    {
-                        logger.LogError("✗ Tablolar yeniden oluşturulamadı!");
-                    }
-                }
-                catch (Exception ex2)
-                {
-                    logger.LogError("Tablolar yeniden oluşturulamadı: {Message}", ex2.Message);
-                }
+                logger.LogError("✗ Tablolar hala oluşturulamadı! Hata: {Message}", ex.Message);
+                throw new Exception($"Tablolar oluşturulamadı: {ex.Message}");
             }
-            
-            logger.LogInformation("=== VERİTABANI KURULUMU TAMAMLANDI ===");
         }
+        
+        logger.LogInformation("=== VERİTABANI KURULUMU TAMAMLANDI ===");
     }
 }
 catch (Exception ex)
@@ -155,6 +164,7 @@ catch (Exception ex)
         logger.LogError(ex, "✗✗✗ VERİTABANI KURULUMU BAŞARISIZ! ✗✗✗");
         logger.LogError("Hata: {Message}", ex.Message);
         logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
+        logger.LogError("Inner exception: {InnerException}", ex.InnerException?.Message);
     }
     catch { }
 }
