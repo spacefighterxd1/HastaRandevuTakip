@@ -1,0 +1,73 @@
+@model HastaRandevuTakip.Models.Randevu
+
+@{
+    ViewData["Title"] = "Randevu Sil";
+}
+
+<h2 class="text-danger">🗑️ Randevu Sil</h2>
+<hr />
+
+<h4>Bu randevuyu silmek istediğinizden emin misiniz?</h4>
+<div class="alert alert-warning">
+    <strong>Uyarı:</strong> Bu işlem geri alınamaz!
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <dl class="row">
+            <dt class="col-sm-4">Hasta:</dt>
+            <dd class="col-sm-8">
+                <strong>@Model.Hasta?.AdSoyad</strong>
+            </dd>
+
+            <dt class="col-sm-4">Randevu Tarihi:</dt>
+            <dd class="col-sm-8">
+                <strong>@Model.RandevuTarihi.ToString("dd.MM.yyyy HH:mm")</strong>
+            </dd>
+
+            <dt class="col-sm-4">Doktor:</dt>
+            <dd class="col-sm-8">
+                <strong>@(Model.Doktor?.AdSoyad ?? Model.DoktorAdi ?? "Belirtilmemiş")</strong>
+                @if (Model.Doktor != null)
+                {
+                    <br><small class="text-muted">@Model.Doktor.UzmanlikAlani</small>
+                }
+            </dd>
+
+            <dt class="col-sm-4">Poliklinik:</dt>
+            <dd class="col-sm-8">@(Model.Poliklinik ?? "Belirtilmemiş")</dd>
+
+            <dt class="col-sm-4">Rahatsızlık:</dt>
+            <dd class="col-sm-8">@(Model.Rahatsizlik ?? "Belirtilmemiş")</dd>
+
+            <dt class="col-sm-4">Durum:</dt>
+            <dd class="col-sm-8">
+                @switch (Model.Durum)
+                {
+                    case RandevuDurumu.Bekliyor:
+                        <span class="badge bg-warning">Bekliyor</span>
+                        break;
+                    case RandevuDurumu.Onaylandi:
+                        <span class="badge bg-success">Onaylandı</span>
+                        break;
+                    case RandevuDurumu.IptalEdildi:
+                        <span class="badge bg-danger">İptal Edildi</span>
+                        break;
+                    case RandevuDurumu.Tamamlandi:
+                        <span class="badge bg-info">Tamamlandı</span>
+                        break;
+                }
+            </dd>
+        </dl>
+
+        <form asp-action="Delete" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">
+                <span>🗑️</span> Evet, Sil
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+        </form>
+    </div>
+</div>
+
+

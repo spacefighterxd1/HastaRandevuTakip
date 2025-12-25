@@ -1,0 +1,83 @@
+@model HastaRandevuTakip.Models.Hasta
+
+@{
+    ViewData["Title"] = "Hasta Düzenle";
+}
+
+<h2>✏️ Hasta Düzenle</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" class="needs-validation" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedDate" />
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Ad" class="form-label"></label>
+                    <input asp-for="Ad" class="form-control" required />
+                    <span asp-validation-for="Ad" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Soyad" class="form-label"></label>
+                    <input asp-for="Soyad" class="form-control" required />
+                    <span asp-validation-for="Soyad" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TCKimlikNo" class="form-label"></label>
+                <input asp-for="TCKimlikNo" class="form-control" maxlength="11" required />
+                <span asp-validation-for="TCKimlikNo" class="text-danger"></span>
+                <small class="form-text text-muted">11 haneli TC Kimlik No giriniz</small>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Telefon" class="form-label"></label>
+                <input asp-for="Telefon" class="form-control" type="tel" required />
+                <span asp-validation-for="Telefon" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" type="email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DogumTarihi" class="form-label"></label>
+                <input asp-for="DogumTarihi" class="form-control" type="date" />
+                <span asp-validation-for="DogumTarihi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Adres" class="form-label"></label>
+                <textarea asp-for="Adres" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Adres" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <span>💾</span> Güncelle
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // TC Kimlik No sadece rakam
+        document.getElementById('TCKimlikNo')?.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
+}
+
+

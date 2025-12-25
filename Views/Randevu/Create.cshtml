@@ -1,0 +1,98 @@
+@model HastaRandevuTakip.Models.Randevu
+
+@{
+    ViewData["Title"] = "Yeni Randevu Oluştur";
+}
+
+<h2>📅 Yeni Randevu Oluştur</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create" class="needs-validation" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            
+            <div class="mb-3">
+                <label asp-for="HastaId" class="form-label"></label>
+                <select asp-for="HastaId" class="form-select" asp-items="ViewBag.HastaId" required>
+                    <option value="">-- Hasta Seçiniz --</option>
+                </select>
+                <span asp-validation-for="HastaId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DoktorId" class="form-label"></label>
+                <select asp-for="DoktorId" class="form-select" asp-items="ViewBag.DoktorId" required>
+                    <option value="">-- Doktor Seçiniz --</option>
+                </select>
+                <span asp-validation-for="DoktorId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="RandevuTarihi" class="form-label"></label>
+                <input asp-for="RandevuTarihi" class="form-control" type="datetime-local" required />
+                <span asp-validation-for="RandevuTarihi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DoktorAdi" class="form-label"></label>
+                <input asp-for="DoktorAdi" class="form-control" />
+                <span asp-validation-for="DoktorAdi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Poliklinik" class="form-label"></label>
+                <input asp-for="Poliklinik" class="form-control" />
+                <span asp-validation-for="Poliklinik" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Durum" class="form-label"></label>
+                <select asp-for="Durum" class="form-select" asp-items="ViewBag.DurumList"></select>
+                <span asp-validation-for="Durum" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Rahatsizlik" class="form-label"></label>
+                <textarea asp-for="Rahatsizlik" class="form-control" rows="4" required></textarea>
+                <span asp-validation-for="Rahatsizlik" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Notlar" class="form-label"></label>
+                <textarea asp-for="Notlar" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Notlar" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <span>💾</span> Kaydet
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
+}
+
+

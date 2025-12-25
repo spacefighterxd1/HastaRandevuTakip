@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="text-center mb-5">
+    <h1 class="display-4">🏥 Online Randevu Sistemi</h1>
+    <p class="lead">Hızlı ve kolay randevu alma sistemi</p>
+    <a asp-controller="RandevuAlma" asp-action="Index" class="btn btn-primary btn-lg mt-3">
+        📅 Randevu Al
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Toplam Hasta</h5>
+                        <h2 class="mb-0">@ViewBag.ToplamHasta</h2>
+                    </div>
+                    <div class="fs-1">👥</div>
+                </div>
+            </div>
+                <div class="card-footer">
+                <a asp-controller="RandevuAlma" asp-action="Index" class="text-white text-decoration-none">
+                    Randevu Al →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Toplam Randevu</h5>
+                        <h2 class="mb-0">@ViewBag.ToplamRandevu</h2>
+                    </div>
+                    <div class="fs-1">📅</div>
+                </div>
+            </div>
+                <div class="card-footer">
+                <a asp-controller="RandevuAlma" asp-action="Index" class="text-white text-decoration-none">
+                    Randevu Al →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Bugünkü Randevular</h5>
+                        <h2 class="mb-0">@ViewBag.BugunRandevu</h2>
+                    </div>
+                    <div class="fs-1">📋</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a asp-controller="Randevu" asp-action="Index" class="text-white text-decoration-none">
+                    Detayları Görüntüle →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Bekleyen Randevular</h5>
+                        <h2 class="mb-0">@ViewBag.BekleyenRandevu</h2>
+                    </div>
+                    <div class="fs-1">⏳</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a asp-controller="Randevu" asp-action="Index" class="text-white text-decoration-none">
+                    Detayları Görüntüle →
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Hızlı İşlemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-controller="RandevuAlma" asp-action="Index" class="btn btn-outline-primary btn-lg">
+                        📅 Randevu Al
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Sistem Özellikleri</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li>✅ Online randevu alma</li>
+                    <li>✅ Doktor seçimi</li>
+                    <li>✅ Rahatsızlık bildirimi</li>
+                    <li>✅ Responsive tasarım</li>
+                    <li>✅ Hızlı ve kolay kullanım</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+

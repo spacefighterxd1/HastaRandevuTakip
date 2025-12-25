@@ -1,0 +1,145 @@
+@model HastaRandevuTakip.Models.Randevu
+
+@{
+    ViewData["Title"] = "Randevu Formu";
+    var doktor = ViewBag.Doktor as HastaRandevuTakip.Models.Doktor;
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">📅 Randevu Formu</h3>
+                </div>
+                <div class="card-body">
+                    @if (doktor != null)
+                    {
+                        <div class="alert alert-info">
+                            <strong>Seçilen Doktor:</strong> @doktor.AdSoyad - @doktor.UzmanlikAlani
+                        </div>
+                    }
+
+                    <form asp-action="RandevuFormu" method="post" class="needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <input type="hidden" asp-for="DoktorId" value="@ViewBag.DoktorId" />
+
+                        <h5 class="mb-3">👤 Hasta Bilgileri</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ad <span class="text-danger">*</span></label>
+                                <input name="Ad" class="form-control" required />
+                                <span class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Soyad <span class="text-danger">*</span></label>
+                                <input name="Soyad" class="form-control" required />
+                                <span class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">TC Kimlik No <span class="text-danger">*</span></label>
+                                <input name="TCKimlikNo" class="form-control" maxlength="11" required />
+                                <small class="form-text text-muted">11 haneli TC Kimlik No</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefon <span class="text-danger">*</span></label>
+                                <input name="Telefon" type="tel" class="form-control" required />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">E-posta</label>
+                                <input name="Email" type="email" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Doğum Tarihi</label>
+                                <input name="DogumTarihi" type="date" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Adres</label>
+                            <textarea name="Adres" class="form-control" rows="2"></textarea>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">📋 Randevu Bilgileri</h5>
+                        
+                        <div class="mb-3">
+                            <label asp-for="RandevuTarihi" class="form-label"></label>
+                            <input asp-for="RandevuTarihi" class="form-control" type="datetime-local" required />
+                            <span asp-validation-for="RandevuTarihi" class="text-danger"></span>
+                            <small class="form-text text-muted">Randevu tarih ve saatini seçiniz</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Rahatsizlik" class="form-label"></label>
+                            <textarea asp-for="Rahatsizlik" class="form-control" rows="4" 
+                                      placeholder="Lütfen rahatsızlığınızı detaylı olarak açıklayınız..." required></textarea>
+                            <span asp-validation-for="Rahatsizlik" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Notlar" class="form-label">Ek Notlar (İsteğe Bağlı)</label>
+                            <textarea asp-for="Notlar" class="form-control" rows="3" 
+                                      placeholder="Eklemek istediğiniz başka bir bilgi varsa yazabilirsiniz..."></textarea>
+                            <span asp-validation-for="Notlar" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                            <a asp-action="Randevularim" class="btn btn-outline-info">📋 Randevularım</a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ✅ Randevu Oluştur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // TC Kimlik No sadece rakam
+        document.querySelector('input[name="TCKimlikNo"]')?.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 11);
+            }
+        });
+
+        // Form validation
+        (function() {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        // Minimum tarih kontrolü (bugünden önceki tarihler seçilemez)
+        var tarihInput = document.querySelector('input[type="datetime-local"]');
+        if (tarihInput) {
+            var now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            tarihInput.min = now.toISOString().slice(0, 16);
+        }
+    </script>
+}
+

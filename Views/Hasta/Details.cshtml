@@ -1,0 +1,97 @@
+@model HastaRandevuTakip.Models.Hasta
+
+@{
+    ViewData["Title"] = "Hasta Detayları";
+}
+
+<h2>👤 Hasta Detayları</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <dl class="row">
+            <dt class="col-sm-4">Ad:</dt>
+            <dd class="col-sm-8"><strong>@Model.Ad</strong></dd>
+
+            <dt class="col-sm-4">Soyad:</dt>
+            <dd class="col-sm-8"><strong>@Model.Soyad</strong></dd>
+
+            <dt class="col-sm-4">TC Kimlik No:</dt>
+            <dd class="col-sm-8">@Model.TCKimlikNo</dd>
+
+            <dt class="col-sm-4">Telefon:</dt>
+            <dd class="col-sm-8">@Model.Telefon</dd>
+
+            <dt class="col-sm-4">E-posta:</dt>
+            <dd class="col-sm-8">@(Model.Email ?? "Belirtilmemiş")</dd>
+
+            <dt class="col-sm-4">Doğum Tarihi:</dt>
+            <dd class="col-sm-8">@(Model.DogumTarihi?.ToString("dd.MM.yyyy") ?? "Belirtilmemiş")</dd>
+
+            <dt class="col-sm-4">Adres:</dt>
+            <dd class="col-sm-8">@(Model.Adres ?? "Belirtilmemiş")</dd>
+
+            <dt class="col-sm-4">Kayıt Tarihi:</dt>
+            <dd class="col-sm-8">@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</dd>
+        </dl>
+
+        @if (Model.Randevular != null && Model.Randevular.Any())
+        {
+            <div class="mt-4">
+                <h4>Randevular (@Model.Randevular.Count)</h4>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Doktor</th>
+                                <th>Poliklinik</th>
+                                <th>Rahatsızlık</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var randevu in Model.Randevular.OrderByDescending(r => r.RandevuTarihi))
+                            {
+                                <tr>
+                                    <td>@randevu.RandevuTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@(randevu.Doktor?.AdSoyad ?? randevu.DoktorAdi ?? "-")</td>
+                                    <td>@(randevu.Poliklinik ?? "-")</td>
+                                    <td><small>@(randevu.Rahatsizlik?.Length > 30 ? randevu.Rahatsizlik.Substring(0, 30) + "..." : randevu.Rahatsizlik ?? "-")</small></td>
+                                    <td>
+                                        @switch (randevu.Durum)
+                                        {
+                                            case RandevuDurumu.Bekliyor:
+                                                <span class="badge bg-warning">Bekliyor</span>
+                                                break;
+                                            case RandevuDurumu.Onaylandi:
+                                                <span class="badge bg-success">Onaylandı</span>
+                                                break;
+                                            case RandevuDurumu.IptalEdildi:
+                                                <span class="badge bg-danger">İptal Edildi</span>
+                                                break;
+                                            case RandevuDurumu.Tamamlandi:
+                                                <span class="badge bg-info">Tamamlandı</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <div class="mt-4">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                ✏️ Düzenle
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+            <a asp-controller="RandevuAlma" asp-action="Index" 
+               class="btn btn-success">📅 Yeni Randevu Oluştur</a>
+        </div>
+    </div>
+</div>
+
+

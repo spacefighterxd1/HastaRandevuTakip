@@ -1,0 +1,99 @@
+@model HastaRandevuTakip.Models.Randevu
+
+@{
+    ViewData["Title"] = "Randevu Düzenle";
+}
+
+<h2>✏️ Randevu Düzenle</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" class="needs-validation" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedDate" />
+            
+            <div class="mb-3">
+                <label asp-for="HastaId" class="form-label"></label>
+                <select asp-for="HastaId" class="form-select" asp-items="ViewBag.HastaId" required>
+                    <option value="">-- Hasta Seçiniz --</option>
+                </select>
+                <span asp-validation-for="HastaId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DoktorId" class="form-label"></label>
+                <select asp-for="DoktorId" class="form-select" asp-items="ViewBag.DoktorId" required>
+                    <option value="">-- Doktor Seçiniz --</option>
+                </select>
+                <span asp-validation-for="DoktorId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="RandevuTarihi" class="form-label"></label>
+                <input asp-for="RandevuTarihi" class="form-control" type="datetime-local" required />
+                <span asp-validation-for="RandevuTarihi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DoktorAdi" class="form-label"></label>
+                <input asp-for="DoktorAdi" class="form-control" />
+                <span asp-validation-for="DoktorAdi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Poliklinik" class="form-label"></label>
+                <input asp-for="Poliklinik" class="form-control" />
+                <span asp-validation-for="Poliklinik" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Durum" class="form-label"></label>
+                <select asp-for="Durum" class="form-select" asp-items="ViewBag.DurumList"></select>
+                <span asp-validation-for="Durum" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Rahatsizlik" class="form-label"></label>
+                <textarea asp-for="Rahatsizlik" class="form-control" rows="4" required></textarea>
+                <span asp-validation-for="Rahatsizlik" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Notlar" class="form-label"></label>
+                <textarea asp-for="Notlar" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Notlar" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <span>💾</span> Güncelle
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // DateTime-local formatı için dönüşüm
+        document.addEventListener('DOMContentLoaded', function() {
+            var dateInput = document.querySelector('input[type="datetime-local"]');
+            if (dateInput && dateInput.value) {
+                var date = new Date(dateInput.value);
+                var year = date.getFullYear();
+                var month = String(date.getMonth() + 1).padStart(2, '0');
+                var day = String(date.getDate()).padStart(2, '0');
+                var hours = String(date.getHours()).padStart(2, '0');
+                var minutes = String(date.getMinutes()).padStart(2, '0');
+                dateInput.value = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+            }
+        });
+    </script>
+}
+
+

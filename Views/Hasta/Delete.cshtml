@@ -1,0 +1,49 @@
+@model HastaRandevuTakip.Models.Hasta
+
+@{
+    ViewData["Title"] = "Hasta Sil";
+}
+
+<h2 class="text-danger">🗑️ Hasta Sil</h2>
+<hr />
+
+<h4>Bu hastayı silmek istediğinizden emin misiniz?</h4>
+<div class="alert alert-warning">
+    <strong>Uyarı:</strong> Bu işlem geri alınamaz!
+</div>
+
+@if (ViewBag.RandevuSayisi > 0)
+{
+    <div class="alert alert-danger">
+        <strong>Dikkat!</strong> Bu hastaya ait <strong>@ViewBag.RandevuSayisi</strong> randevu bulunmaktadır. 
+        Önce randevuları silmeniz gerekmektedir.
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <dl class="row">
+            <dt class="col-sm-4">Ad Soyad:</dt>
+            <dd class="col-sm-8"><strong>@Model.AdSoyad</strong></dd>
+
+            <dt class="col-sm-4">TC Kimlik No:</dt>
+            <dd class="col-sm-8">@Model.TCKimlikNo</dd>
+
+            <dt class="col-sm-4">Telefon:</dt>
+            <dd class="col-sm-8">@Model.Telefon</dd>
+
+            <dt class="col-sm-4">E-posta:</dt>
+            <dd class="col-sm-8">@(Model.Email ?? "Belirtilmemiş")</dd>
+        </dl>
+
+        <form asp-action="Delete" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger" @(ViewBag.RandevuSayisi > 0 ? "disabled" : "")>
+                <span>🗑️</span> Evet, Sil
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+        </form>
+    </div>
+</div>
+
+

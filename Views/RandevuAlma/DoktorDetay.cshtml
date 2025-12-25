@@ -1,0 +1,50 @@
+@model HastaRandevuTakip.Models.Doktor
+
+@{
+    ViewData["Title"] = "Doktor Detayları";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        @if (!string.IsNullOrEmpty(Model.FotoUrl))
+                        {
+                            <img src="@Model.FotoUrl" alt="@Model.AdSoyad" 
+                                 class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 150px; height: 150px; font-size: 4rem;">
+                                👨‍⚕️
+                            </div>
+                        }
+                        <h2>@Model.AdSoyad</h2>
+                        <p class="text-primary fs-4 fw-bold">@Model.UzmanlikAlani</p>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h5>Hakkında</h5>
+                        <p class="text-muted">@(Model.Aciklama ?? "Açıklama bulunmamaktadır.")</p>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-action="RandevuFormu" asp-route-doktorId="@Model.Id" 
+                           class="btn btn-primary btn-lg">
+                            📅 Bu Doktordan Randevu Al
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            ← Geri Dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
